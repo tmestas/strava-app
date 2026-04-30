@@ -1,12 +1,15 @@
-import {getAuthCode, exchangeCodeForToken, getActivities} from "./src/auth/strava-auth.js"
+import { getAuthCode, exchangeToken } from "./src/auth/strava-auth.js";
+import { create_client, get_athlete, get_activities } from "./src/clients/strava-client.js";
 
-const code = await getAuthCode();
-console.log("Got auth code, exchanging for token...");
+const code = await getAuthCode();        // opens browser, waits for redirect
+const token = await exchangeToken(code); // exchanges code via strava.oauth.getToken
 
-const token = await exchangeCodeForToken(code);
-console.log(`Authenticated as: ${token.athlete.firstname} ${token.athlete.lastname}`);
-console.log(`Access token expires at: ${new Date(token.expires_at * 1000).toLocaleString()}`);
+const client = create_client(token.access_token);
 
-const activities = await getActivities(token.access_token);
-console.log(`Fetched ${activities.length} activities`);
+/*
+const athlete = await get_athlete(client);
+console.log(athlete);
+*/
+
+const activities = await get_activities(client);
 console.log(activities);
