@@ -1,23 +1,18 @@
 {
-  "name": "strava-app",
+  "name": "strava-mcp-server",
   "version": "1.0.0",
-  "description": "app for my strava data",
-  "main": "index.js",
+  "description": "MCP server exposing Strava training data to LLMs",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tmestas/strava-app.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/tmestas/strava-app/issues"
-  },
-  "homepage": "https://github.com/tmestas/strava-app#readme",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
     "dotenv": "^17.4.2",
-    "strava-v3": "^4.0.1"
+    "express": "^4.21.2",
+    "strava-v3": "^4.0.1",
+    "zod": "^3.24.4"
   }
 }
