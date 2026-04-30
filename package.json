@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/tmestas/strava-app/issues"
   },
-  "homepage": "https://github.com/tmestas/strava-app#readme"
+  "homepage": "https://github.com/tmestas/strava-app#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
 }
