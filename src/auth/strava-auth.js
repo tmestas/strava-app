@@ -27,7 +27,6 @@ function openBrowser(url) {
 }
 
 export function getAuthURL() {
-  console.log(REDIRECT_URI, CLIENT_ID)
     return strava.oauth.getRequestAccessURL({ redirect_uri: REDIRECT_URI, client_id: CLIENT_ID, scope: "read,activity:read_all,profile:read_all,read_all" });
 }
 
