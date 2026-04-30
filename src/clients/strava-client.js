@@ -1,41 +1,37 @@
 import strava from "strava-v3";
-import fs from "fs/promises";
+import dotenv from "dotenv";
+dotenv.config();
 
-export function create_client(accessToken) {
-    return new strava.client(accessToken);
+let tokenCache = {
+  access_token: process.env.ACCESS_TOKEN,
+  refresh_token: process.env.REFRESH_TOKEN,
+  expires_at: parseInt(process.env.TOKEN_EXPIRES_AT || "0"),
+};
+
+async function refreshIfNeeded() {
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (tokenCache.expires_at && nowSec < tokenCache.expires_at - 300) {
+    return; // still valid with 5-min buffer
+  }
+
+  console.log("Refreshing Strava token...");
+  strava.config({
+    client_id: process.env.CLIENT_ID,
+    client_secret: process.env.CLIENT_SECRET,
+    redirect_uri: process.env.REDIRECT_URI || "http://localhost:8080",
+  });
+
+  const payload = await strava.oauth.refreshToken(tokenCache.refresh_token);
+  tokenCache = {
+    access_token: payload.access_token,
+    refresh_token: payload.refresh_token,
+    expires_at: payload.expires_at,
+  };
+  console.log(`Token refreshed, expires at ${new Date(payload.expires_at * 1000).toISOString()}`);
 }
 
-export async function get_athlete(client) {
-    return client.athlete.get({});
+export async function getStravaClient() {
+  await refreshIfNeeded();
+  strava.config({ access_token: tokenCache.access_token });
+  return strava;
 }
-
-export async function get_activities(client) {
-    return client.athlete.listActivities({});
-}
-
-/**
- * Fetches all paginated activities for the authenticated athlete and writes them to a JSON file.
- *
- * @param {object} client - A strava-v3 client instance scoped to the authenticated user.
- * @returns {Promise<void>}
- */
-export async function get_and_export_activities(client) {
-    const allActivities = [];
-    let page = 1;
-    const per_page = 200; // max allowed by Strava
-
-    while (true) {
-        const activities = await client.athlete.listActivities({ page, per_page });
-
-        if (activities.length === 0) break;
-
-        allActivities.push(...activities);
-        console.log(`Fetched page ${page}, total so far: ${allActivities.length}`);
-        page++;
-    }
-
-    await fs.writeFile("activities.json", JSON.stringify(allActivities, null, 2));
-    console.log(`Exported ${allActivities.length} activities to activities.json`);
-}
-
-
