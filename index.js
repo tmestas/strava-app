@@ -1,5 +1,5 @@
 import { getAuthCode, exchangeToken } from "./src/auth/strava-auth.js";
-import { create_client, get_athlete, get_activities } from "./src/clients/strava-client.js";
+import { create_client, get_athlete, get_activities, get_and_export_activities} from "./src/clients/strava-client.js";
 
 const code = await getAuthCode();        // opens browser, waits for redirect
 const token = await exchangeToken(code); // exchanges code via strava.oauth.getToken
@@ -11,5 +11,7 @@ const athlete = await get_athlete(client);
 console.log(athlete);
 */
 
-const activities = await get_activities(client);
-console.log(activities);
+const activities = await get_and_export_activities(client);
+// console.log(activities);
+
+return;
