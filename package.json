@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/tmestas/strava-app#readme",
   "dependencies": {
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "strava-v3": "^4.0.1"
   }
 }
