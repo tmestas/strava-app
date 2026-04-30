@@ -6,12 +6,6 @@ const token = await exchangeToken(code); // exchanges code via strava.oauth.getT
 
 const client = create_client(token.access_token);
 
-/*
-const athlete = await get_athlete(client);
-console.log(athlete);
-*/
-
 const activities = await get_and_export_activities(client);
-// console.log(activities);
 
 return;
