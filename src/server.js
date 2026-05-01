@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import express from "express";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { getStravaClient } from "./clients/strava-client.js";
 import {
@@ -10,9 +9,6 @@ import {
   getBestEfforts,
   getLongRuns,
 } from "./tools/strava-tools.js";
-
-const app = express();
-app.use(express.json());
 
 function createMcpServer() {
   const server = new McpServer({
@@ -88,21 +84,14 @@ function createMcpServer() {
   return server;
 }
 
-// Stateless streamable-http transport (one session per request)
-app.post("/mcp", async (req, res) => {
+async function main() {
   const server = createMcpServer();
-  const transport = new StreamableHTTPServerTransport({
-    sessionIdGenerator: undefined, // stateless
-  });
-  res.on("close", () => server.close());
+  const transport = new StdioServerTransport();
   await server.connect(transport);
-  await transport.handleRequest(req, res, req.body);
-});
+  console.error("Strava MCP Server running on stdio");
+}
 
-// Health check for AWS load balancer / ECS
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Strava MCP server listening on port ${PORT}`);
+main().catch((error) => {
+  console.error("Fatal error in main():", error);
+  process.exit(1);
 });
