@@ -1,6 +1,14 @@
 import strava from "strava-v3";
 import dotenv from "dotenv";
-dotenv.config();
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ENV_PATH = path.resolve(__dirname, "../../.env");
+dotenv.config({ path: ENV_PATH });
 
 let tokenCache = {
   access_token: process.env.ACCESS_TOKEN,
@@ -8,10 +16,19 @@ let tokenCache = {
   expires_at: parseInt(process.env.TOKEN_EXPIRES_AT || "0"),
 };
 
+function persistTokens(tokens) {
+  let env = fs.readFileSync(ENV_PATH, "utf8");
+  env = env
+    .replace(/^ACCESS_TOKEN=.*/m, `ACCESS_TOKEN=${tokens.access_token}`)
+    .replace(/^REFRESH_TOKEN=.*/m, `REFRESH_TOKEN=${tokens.refresh_token}`)
+    .replace(/^TOKEN_EXPIRES_AT=.*/m, `TOKEN_EXPIRES_AT=${tokens.expires_at}`);
+  fs.writeFileSync(ENV_PATH, env, "utf8");
+}
+
 async function refreshIfNeeded() {
   const nowSec = Math.floor(Date.now() / 1000);
   if (tokenCache.expires_at && nowSec < tokenCache.expires_at - 300) {
-    return; // still valid with 5-min buffer
+    return;
   }
 
   console.log("Refreshing Strava token...");
@@ -27,6 +44,9 @@ async function refreshIfNeeded() {
     refresh_token: payload.refresh_token,
     expires_at: payload.expires_at,
   };
+
+  persistTokens(tokenCache); // <-- save back to .env
+
   console.log(`Token refreshed, expires at ${new Date(payload.expires_at * 1000).toISOString()}`);
 }
 
